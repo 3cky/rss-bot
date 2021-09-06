@@ -18,11 +18,12 @@ import (
 
 // RSSBot is the class that manages the RSS bot
 type RSSBot struct {
-	log    *log.Logger
-	bot    *tb.Bot
-	feeds  *feeds.Feeds
-	ctx    context.Context
-	cancel context.CancelFunc
+	log      *log.Logger
+	bot      *tb.Bot
+	feeds    *feeds.Feeds
+	ctx      context.Context
+	cancel   context.CancelFunc
+	location *time.Location
 }
 
 // Init the object
@@ -61,6 +62,16 @@ func (b *RSSBot) Init() (err error) {
 
 			return true
 		})
+	}
+
+	// Get timezone for date formatting and convert it to location
+	tz := viper.GetString("TimeZone")
+	if tz != "" {
+		location, err := time.LoadLocation(tz)
+		if err != nil {
+			return err
+		}
+		b.location = location
 	}
 
 	// Create the bot object
@@ -195,9 +206,13 @@ func (b *RSSBot) formatUpdateMessage(msg *feeds.UpdateMessage) string {
 	}
 
 	// Add the content
+	msgDate := msg.Post.Date
+	if b.location != nil {
+		msgDate = msgDate.In(b.location)
+	}
 	out += fmt.Sprintf("📬 <b>%s</b>\n🕓 %s\n🔗 %s\n",
 		b.escapeHTMLEntities(msg.Post.Title),
-		b.escapeHTMLEntities(msg.Post.Date.UTC().Format("Mon, 02 Jan 2006 15:04:05 MST")),
+		b.escapeHTMLEntities(msgDate.Format("Mon, 02 Jan 2006 15:04:05 MST")),
 		b.escapeHTMLEntities(msg.Post.Link),
 	)
 	return out

@@ -40,6 +40,7 @@ func loadConfig() {
 	viper.SetDefault("DBPath", "./bot.db")
 	viper.SetDefault("FeedUpdateInterval", 600)
 	viper.SetDefault("AllowedUsers", nil)
+	viper.SetDefault("TimeZone", "")
 
 	// Env
 	viper.SetEnvPrefix("BOT")
