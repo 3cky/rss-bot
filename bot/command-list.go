@@ -11,7 +11,7 @@ func (b *RSSBot) handleList(m *tb.Message) {
 	// Get the list of subscriptions
 	feeds, err := b.feeds.ListSubscriptions(m.Chat.ID)
 	if err != nil {
-		b.respondToCommand(m, "An internal error occurred")
+		b.respondToCommand(m, fmt.Sprintf("An internal error occurred: %v", err))
 		return
 	}
 

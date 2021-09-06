@@ -24,7 +24,7 @@ func (b *RSSBot) handleRemove(m *tb.Message) {
 	// Get the list of subscriptions
 	feeds, err := b.feeds.ListSubscriptions(m.Chat.ID)
 	if err != nil {
-		b.respondToCommand(m, "An internal error occurred")
+		b.respondToCommand(m, fmt.Sprintf("An internal error occurred: %v", err))
 		return
 	}
 
@@ -58,7 +58,7 @@ func (b *RSSBot) callbackConfirmRemove(cb *tb.Callback, userData string) {
 	feedId, err := strconv.Atoi(userData)
 	if err != nil || feedId < 1 {
 		b.log.Println("Invalid feedId in confirm-remove callback", err)
-		b.bot.Send(cb.Message.Chat, "An internal error occurred")
+		b.bot.Send(cb.Message.Chat, fmt.Sprintf("An internal error occurred: %v", err))
 		return
 	}
 
@@ -66,7 +66,7 @@ func (b *RSSBot) callbackConfirmRemove(cb *tb.Callback, userData string) {
 	err = b.feeds.DeleteSubscription(int64(feedId), cb.Message.Chat.ID)
 	if err != nil {
 		// Error is already logged
-		b.bot.Send(cb.Message.Chat, "An internal error occurred")
+		b.bot.Send(cb.Message.Chat, fmt.Sprintf("An internal error occurred: %v", err))
 		return
 	}
 

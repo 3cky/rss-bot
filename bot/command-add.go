@@ -30,7 +30,7 @@ func (b *RSSBot) handleAdd(m *tb.Message) {
 		if err == feeds.ErrAlreadySubscribed {
 			b.bot.Edit(wm, "This chat is already subscribed to the feed")
 		} else {
-			b.bot.Edit(wm, "An internal error occurred")
+			b.bot.Edit(wm, fmt.Sprintf("An internal error occurred: %v", err))
 		}
 		return
 	}
