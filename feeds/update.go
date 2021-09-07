@@ -160,9 +160,10 @@ func (f *Feeds) fetchFeed(feed *models.Feed) ([]Post, error) {
 			// Check if this is a new post
 			if el != nil && el.PublishedParsed != nil && el.PublishedParsed.After(after) {
 				p := Post{
-					Title: el.Title,
-					Link:  el.Link,
-					Date:  *el.PublishedParsed,
+					Title:   el.Title,
+					Link:    el.Link,
+					Date:    *el.PublishedParsed,
+					Content: el.Content,
 				}
 
 				// Request the metadata for the post

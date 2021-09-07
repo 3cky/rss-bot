@@ -13,6 +13,8 @@ import (
 	"github.com/spf13/viper"
 	tb "gopkg.in/tucnak/telebot.v2"
 
+	"github.com/microcosm-cc/bluemonday"
+
 	"github.com/ItalyPaleAle/rss-bot/feeds"
 )
 
@@ -164,6 +166,35 @@ func (b *RSSBot) escapeHTMLEntities(s string) string {
 	return r.Replace(s)
 }
 
+// Sanitize HTML for use in Telegram message
+func (b *RSSBot) sanitizeHTML(s string) string {
+	p := bluemonday.NewPolicy()
+
+	// Require URLs to be parseable by net/url.Parse and either:
+	//   mailto: http:// or https://
+	p.AllowStandardURLs()
+
+	// The following tags are currently supported:
+	//
+	// <b>bold</b>, <strong>bold</strong>
+	// <i>italic</i>, <em>italic</em>
+	// <u>underline</u>, <ins>underline</ins>
+	// <s>strikethrough</s>, <strike>strikethrough</strike>, <del>strikethrough</del>
+	// <b>bold <i>italic bold <s>italic bold strikethrough</s> <u>underline italic bold</u></i> bold</b>
+	// <a href="http://www.example.com/">inline URL</a>
+	// <a href="tg://user?id=123456789">inline mention of a user</a>
+	// <code>inline fixed-width code</code>
+	// <pre>pre-formatted fixed-width code block</pre>
+	// <pre><code class="language-python">pre-formatted fixed-width code block written in the Python programming language</code></pre>
+	//
+	// Source: https://core.telegram.org/bots/api#html-style
+	p.AllowAttrs("href").OnElements("a")
+	p.AllowAttrs("class").OnElements("code")
+	p.AllowElements("b", "strong", "i", "em", "u", "ins", "s", "strike", "del", "code", "pre")
+
+	return p.Sanitize(s)
+}
+
 // Sends a message with a feed's post
 func (b *RSSBot) sendFeedUpdate(recipient tb.Recipient, msg *feeds.UpdateMessage) {
 	// Send title
@@ -215,6 +246,12 @@ func (b *RSSBot) formatUpdateMessage(msg *feeds.UpdateMessage) string {
 		b.escapeHTMLEntities(msgDate.Format("Mon, 02 Jan 2006 15:04:05 MST")),
 		b.escapeHTMLEntities(msg.Post.Link),
 	)
+
+	if msg.Post.Content != "" {
+		content := b.sanitizeHTML(msg.Post.Content)
+		out += fmt.Sprintf("📝 %s\n", content)
+	}
+
 	return out
 }
 

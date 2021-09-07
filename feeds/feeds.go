@@ -17,10 +17,11 @@ import (
 
 // Post represents a post in the feed
 type Post struct {
-	Title string
-	Link  string
-	Date  time.Time
-	Photo string
+	Title   string
+	Link    string
+	Date    time.Time
+	Photo   string
+	Content string
 }
 
 // UpdateMessage is the message that needs to be sent to subscribers for new posts
@@ -253,9 +254,10 @@ func (f *Feeds) AddFeed(url string, tx *sqlx.Tx) (*models.Feed, error) {
 			// Check if this is newer than the one stored
 			if el != nil && el.PublishedParsed != nil && el.PublishedParsed.After(feed.LastPostDate) {
 				p := Post{
-					Title: el.Title,
-					Link:  el.Link,
-					Date:  *el.PublishedParsed,
+					Title:   el.Title,
+					Link:    el.Link,
+					Date:    *el.PublishedParsed,
+					Content: el.Content,
 				}
 
 				// Request the metadata for the post
