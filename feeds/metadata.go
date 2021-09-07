@@ -58,7 +58,7 @@ func (f *Feeds) doRequestMetadata(post *Post) (err error) {
 	}
 
 	// Update the feed's data with information from OpenGraph
-	if ogp.Title != "" {
+	if post.Title == "" && ogp.Title != "" {
 		post.Title = ogp.Title
 	}
 	if len(ogp.Image) > 0 {
